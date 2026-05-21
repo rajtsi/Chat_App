@@ -6,51 +6,41 @@ const cloudinary = require("../config/cloudinary");
 const authRepo = require("../repositories/auth.repository");
 
 async function signup(data) {
-
-    const existingEmail =
-        await userRepo.findByEmail(data.email);
+    const existingEmail = await userRepo.findByEmail(data.email);
 
     if (existingEmail) {
         throw new Error("Email already exists");
     }
 
-    const existingUsername =
-        await userRepo.findByUsername(data.username);
+    const existingUsername = await userRepo.findByUsername(data.username);
 
     if (existingUsername) {
         throw new Error("Username already exists");
     }
 
-    const hashedPassword =
-        await bcrypt.hash(data.password, 10);
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
     await userRepo.createUser({
         displayName: data.displayName,
         username: data.username,
         email: data.email,
         password: hashedPassword,
-        avatar: data.displayName[0]
+        avatar: data.displayName[0],
     });
 
     return {
-        message: "User created successfully"
+        message: "User created successfully",
     };
 }
 
 async function login(data) {
-
-    const user =
-        await userRepo.findByEmail(data.email);
+    const user = await userRepo.findByEmail(data.email);
 
     if (!user) {
         throw new Error("Invalid credentials");
     }
 
-    const validPassword =
-        await bcrypt.compare(
-            data.password,
-            user.password
-        );
+    const validPassword = await bcrypt.compare(data.password, user.password);
 
     if (!validPassword) {
         throw new Error("Invalid credentials");
@@ -59,11 +49,11 @@ async function login(data) {
     const token = jwt.sign(
         {
             id: user.id,
-            username: user.username
+            username: user.username,
         },
         process.env.JWT_SECRET,
         {
-            expiresIn: "7d"
+            expiresIn: "7d",
         }
     );
 
@@ -73,91 +63,47 @@ async function login(data) {
         username: user.username,
         email: user.email,
         avatar: user.avatar,
-        bio: user.bio
+        bio: user.bio,
     };
 
     return {
         token,
-        user: safeUser
+        user: safeUser,
     };
 }
 
-
-
-async function updateProfile(
-
-    userId,
-
-    bio,
-
-    file
-
-) {
-
+async function updateProfile(userId, bio, file) {
     let avatarUrl;
 
     /*
     UPLOAD IMAGE
     */
-
     if (file) {
-
-        const uploadedImage =
-            await new Promise(
-
-                (resolve, reject) => {
-
-                    cloudinary.uploader.upload_stream(
-
-                        {
-
-                            folder:
-                                "chat-app"
-
-                        },
-
-                        (
-                            error,
-                            result
-                        ) => {
-
-                            if (error) {
-
-                                reject(error);
-
-                            } else {
-
-                                resolve(result);
-
-                            }
-
+        const uploadedImage = await new Promise((resolve, reject) => {
+            cloudinary.uploader
+                .upload_stream(
+                    {
+                        folder: "chat-app",
+                    },
+                    (error, result) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(result);
                         }
+                    }
+                )
+                .end(file.buffer);
+        });
 
-                    ).end(file.buffer);
-
-                }
-
-            );
-
-        avatarUrl =
-            uploadedImage.secure_url;
-
+        avatarUrl = uploadedImage.secure_url;
     }
 
-    return authRepo.updateProfile(
-
-        userId,
-
-        bio,
-
-        avatarUrl
-
-    );
-
+    return authRepo.updateProfile(userId, bio, avatarUrl);
 }
 
 module.exports = {
     signup,
     login,
-    updateProfile
+    updateProfile,
 };

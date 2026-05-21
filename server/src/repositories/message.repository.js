@@ -1,48 +1,45 @@
-const prisma =
-    require("../config/prisma");
+const prisma = require("../config/prisma");
 
 async function createMessage(data) {
-
     return prisma.message.create({
-
         data,
-
         include: {
-
-            sender: true
-
-        }
-
+            sender: true,
+        },
     });
-
 }
 
-async function getConversationMessages(
-    conversationId
-) {
-
+async function getConversationMessages(conversationId) {
     return prisma.message.findMany({
-
         where: {
-            conversationId
+            conversationId,
         },
-
         include: {
-            sender: true
+            sender: true,
         },
-
         orderBy: {
-            createdAt: "asc"
-        }
-
+            createdAt: "asc",
+        },
     });
+}
 
+async function markMessagesAsSeen(conversationId, currentUserId) {
+    return prisma.message.updateMany({
+        where: {
+            conversationId,
+            senderId: {
+                not: currentUserId,
+            },
+            seenAt: null,
+        },
+        data: {
+            seenAt: new Date(),
+        },
+    });
 }
 
 module.exports = {
-
     createMessage,
-
-    getConversationMessages
-
+    getConversationMessages,
+    markMessagesAsSeen,
 };

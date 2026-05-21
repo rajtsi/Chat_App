@@ -1,52 +1,23 @@
-import {
-    createContext,
-    useContext,
-    useState,
-    useEffect
-} from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { socket } from "../socket";
 
-import { socket }
-    from "../socket";
+const AuthContext = createContext();
 
-const AuthContext =
-    createContext();
-
-export function AuthProvider({
-    children
-}) {
-
-    const [token, setToken] =
-        useState(
-            localStorage.getItem("token")
-        );
-
-    const [user, setUser] =
-        useState(
-            JSON.parse(
-                localStorage.getItem("user")
-            )
-        );
+export function AuthProvider({ children }) {
+    const [token, setToken] = useState(localStorage.getItem("token"));
+    const [user, setUser] = useState(
+        JSON.parse(localStorage.getItem("user"))
+    );
 
     /*
     LOGIN
     */
 
     function login(token, user) {
-
-        localStorage.setItem(
-            "token",
-            token
-        );
-
-        localStorage.setItem(
-            "user",
-            JSON.stringify(user)
-        );
-
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
         setToken(token);
-
         setUser(user);
-
     }
 
     /*
@@ -54,21 +25,11 @@ export function AuthProvider({
     */
 
     function logout() {
-
-        localStorage.removeItem(
-            "token"
-        );
-
-        localStorage.removeItem(
-            "user"
-        );
-
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         socket.disconnect();
-
         setToken(null);
-
         setUser(null);
-
     }
 
     /*
@@ -76,21 +37,12 @@ export function AuthProvider({
     */
 
     useEffect(() => {
-
         if (token) {
-
-            socket.auth = {
-                token
-            };
-
+            socket.auth = { token };
             socket.connect();
-
         } else {
-
             socket.disconnect();
-
         }
-
     }, [token]);
 
     /*
@@ -98,81 +50,36 @@ export function AuthProvider({
     */
 
     useEffect(() => {
-
         function syncAuth(event) {
-
-            if (
-                event.key === "token"
-            ) {
-
-                const updatedToken =
-                    localStorage.getItem(
-                        "token"
-                    );
-
-                const updatedUser =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "user"
-                        )
-                    );
-
-                setToken(
-                    updatedToken
-                );
-
-                setUser(
-                    updatedUser
-                );
-
+            if (event.key === "token") {
+                const updatedToken = localStorage.getItem("token");
+                const updatedUser = JSON.parse(localStorage.getItem("user"));
+                setToken(updatedToken);
+                setUser(updatedUser);
             }
-
         }
 
-        window.addEventListener(
-            "storage",
-            syncAuth
-        );
+        window.addEventListener("storage", syncAuth);
 
         return () => {
-
-            window.removeEventListener(
-                "storage",
-                syncAuth
-            );
-
+            window.removeEventListener("storage", syncAuth);
         };
-
     }, []);
 
     return (
-
         <AuthContext.Provider
             value={{
-
                 token,
-
                 user,
-
                 login,
-
-                logout
-
+                logout,
             }}
         >
-
             {children}
-
         </AuthContext.Provider>
-
     );
-
 }
 
 export function useAuth() {
-
-    return useContext(
-        AuthContext
-    );
-
+    return useContext(AuthContext);
 }

@@ -1,32 +1,19 @@
+const prisma = require("../config/prisma");
 
-const prisma =
-    require("../config/prisma");
-
-async function updateProfile(
-    userId,
-    bio,
-    avatar
-
-) {
-
+async function updateProfile(userId, bio, avatar) {
     return prisma.user.update({
-
         where: {
-            id: userId
+            id: userId,
         },
-
         data: {
             bio,
             ...(avatar && {
-                avatar
-            })
-
-        }
-
+                avatar,
+            }),
+        },
     });
-
 }
 
 module.exports = {
-    updateProfile
+    updateProfile,
 };

@@ -1,48 +1,23 @@
-const conversationService =
-    require("../services/conversation.service");
+const conversationService = require("../services/conversation.service");
 
-async function getConversations(
-    req,
-    res
-) {
-
+async function getConversations(req, res) {
     try {
-
         const conversations =
-            await conversationService.getUserConversations(
-                req.user.id
-            );
-
+            await conversationService.getUserConversations(req.user.id);
         return res.status(200).json({
-
             success: true,
-
-            data: conversations
-
+            data: conversations,
         });
-
     } catch (error) {
-
         return res.status(500).json({
-
             success: false,
-
-            message: error.message
-
+            message: error.message,
         });
-
     }
-
 }
 
-
-async function createDMConversation(
-    req,
-    res
-) {
-
+async function createDMConversation(req, res) {
     try {
-
         const conversation =
             await conversationService.createDMConversation(
                 req.user.id,
@@ -50,28 +25,18 @@ async function createDMConversation(
             );
 
         return res.status(201).json({
-
             success: true,
-
-            data: conversation
-
+            data: conversation,
         });
-
     } catch (error) {
-
         return res.status(400).json({
-
             success: false,
-
-            message: error.message
-
+            message: error.message,
         });
-
     }
-
 }
 
 module.exports = {
     getConversations,
-    createDMConversation
+    createDMConversation,
 };
