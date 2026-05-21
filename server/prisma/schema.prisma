@@ -8,69 +8,59 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  displayName   String
-  username      String   @unique
-  email         String   @unique
-  password      String
-  avatar        String?
-  bio           String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  displayName  String
+  username     String   @unique
+  email        String   @unique
+  password     String
+  avatar       String?
+  bio          String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  sentMessages  Message[] @relation("SenderMessages")
-
-  memberships   ConversationMember[]
+  sentMessages Message[]            @relation("SenderMessages")
+  memberships  ConversationMember[]
 }
 
 model Conversation {
-  id             String   @id @default(uuid())
+  id            String             @id @default(uuid())
+  type          ConversationType   // Fixed back to your original Enum type
+  name          String?
+  createdAt     DateTime           @default(now())
+  lastMessageAt DateTime?
+  messages      Message[]
+  members       ConversationMember[]
 
-  type           ConversationType
-
-  name           String?
-
-  createdAt      DateTime @default(now())
-
-  lastMessageAt  DateTime?
-
-  messages       Message[]
-
-  members        ConversationMember[]
+  // Optimizes sorting your chat list/inbox by latest message activity
+  @@index([lastMessageAt(sort: Desc)])
 }
 
 model ConversationMember {
-  id              String   @id @default(uuid())
+  id             String    @id @default(uuid())
+  userId         String
+  conversationId String
+  joinedAt       DateTime  @default(now())
+  lastSeenAt     DateTime?
 
-  userId          String
-
-  conversationId  String
-
-  joinedAt        DateTime @default(now())
-
-  lastSeenAt      DateTime?
-
-  user            User @relation(fields: [userId], references: [id])
-
-  conversation    Conversation @relation(fields: [conversationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
 
   @@unique([userId, conversationId])
 }
 
 model Message {
-  id              String   @id @default(uuid())
+  id             String    @id @default(uuid())
+  content        String
+  createdAt      DateTime  @default(now())
+  senderId       String
+  seenAt         DateTime?
+  conversationId String
 
-  content         String
+  sender       User         @relation("SenderMessages", fields: [senderId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
 
-  createdAt       DateTime @default(now())
-
-  senderId        String
-  seenAt          DateTime?
-  conversationId  String
-
-  sender          User @relation("SenderMessages", fields: [senderId], references: [id])
-
-  conversation    Conversation @relation(fields: [conversationId], references: [id])
+  // Optimizes fetching historical messages chronologically inside a room
+  @@index([conversationId, createdAt(sort: Asc)])
 }
 
 enum ConversationType {
