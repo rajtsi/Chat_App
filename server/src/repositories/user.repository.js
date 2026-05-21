@@ -1,73 +1,55 @@
 const prisma = require("../config/prisma");
 
 async function createUser(data) {
-
     return prisma.user.create({
-        data
+        data,
     });
-
 }
 
 async function findByEmail(email) {
-
     return prisma.user.findUnique({
         where: {
-            email
-        }
+            email,
+        },
     });
-
 }
 
 async function findByUsername(username) {
-
     return prisma.user.findUnique({
         where: {
-            username
-        }
+            username,
+        },
     });
-
 }
 
 async function findById(id) {
-
     return prisma.user.findUnique({
         where: {
-            id
-        }
+            id,
+        },
     });
-
 }
 
 async function searchUsers(query) {
-
     return prisma.user.findMany({
-
         where: {
-
             OR: [
-
                 {
                     username: {
                         contains: query,
-                        mode: "insensitive"
-                    }
+                        mode: "insensitive",
+                    },
                 },
-
                 {
                     displayName: {
                         contains: query,
-                        mode: "insensitive"
-                    }
-                }
-
-            ]
-
+                        mode: "insensitive",
+                    },
+                },
+            ],
         },
-
-        take: 10
-
+        take: 10,
     });
-
 }
 
 module.exports = {
@@ -75,5 +57,5 @@ module.exports = {
     findByEmail,
     findByUsername,
     findById,
-    searchUsers
+    searchUsers,
 };

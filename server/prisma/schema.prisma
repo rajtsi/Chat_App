@@ -9,61 +9,46 @@ datasource db {
 
 model User {
   id            String   @id @default(uuid())
-
   displayName   String
-
   username      String   @unique
-
   email         String   @unique
-
   password      String
-
   avatar        String?
-
   bio           String?
-
   createdAt     DateTime @default(now())
-
   updatedAt     DateTime @updatedAt
 
   sentMessages  Message[] @relation("SenderMessages")
-
-  conversationsA Conversation[] @relation("UserA")
-
-  conversationsB Conversation[] @relation("UserB")
 
   memberships   ConversationMember[]
 }
 
 model Conversation {
-  id          String   @id @default(uuid())
+  id             String   @id @default(uuid())
 
-  type        ConversationType
+  type           ConversationType
 
-  name        String?
+  name           String?
 
-  createdAt   DateTime @default(now())
+  createdAt      DateTime @default(now())
 
-  userAId     String?
-  userBId     String?
+  lastMessageAt  DateTime?
 
-  userA       User? @relation("UserA", fields: [userAId], references: [id])
+  messages       Message[]
 
-  userB       User? @relation("UserB", fields: [userBId], references: [id])
-
-  messages    Message[]
-
-  members     ConversationMember[]
+  members        ConversationMember[]
 }
 
 model ConversationMember {
-  id              String @id @default(uuid())
+  id              String   @id @default(uuid())
 
   userId          String
 
   conversationId  String
 
   joinedAt        DateTime @default(now())
+
+  lastSeenAt      DateTime?
 
   user            User @relation(fields: [userId], references: [id])
 
@@ -80,7 +65,7 @@ model Message {
   createdAt       DateTime @default(now())
 
   senderId        String
-
+  seenAt          DateTime?
   conversationId  String
 
   sender          User @relation("SenderMessages", fields: [senderId], references: [id])

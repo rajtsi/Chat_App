@@ -1,112 +1,50 @@
-import {
-    useState
-} from "react";
+import { useState } from "react";
+import { updateProfile } from "../api/auth.api";
 
-import {
-    updateProfile
-} from "../api/auth.api";
-
-function ProfileModal({
-
-    isOpen,
-
-    onClose,
-
-    user,
-
-    isOwnProfile,
-
-    isOnline
-
-}) {
-
+function ProfileModal({ isOpen, onClose, user, isOwnProfile, isOnline }) {
     const [bio, setBio] = useState(user.bio || "");
     const [avatarFile, setAvatarFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isEditingBio, setIsEditingBio] = useState(false);
 
-    if (
-        !isOpen ||
-        !user
-    ) {
-
+    if (!isOpen || !user) {
         return null;
-
     }
 
     async function handleSave() {
-
         try {
-
             setLoading(true);
 
-            const formData =
-                new FormData();
-
-            formData.append(
-                "bio",
-                bio
-            );
+            const formData = new FormData();
+            formData.append("bio", bio);
 
             if (avatarFile) {
-
-                formData.append(
-                    "avatar",
-                    avatarFile
-                );
-
+                formData.append("avatar", avatarFile);
             }
 
-            const updatedUser =
-                await updateProfile(
-                    formData
-                );
+            const updatedUser = await updateProfile(formData);
 
             /*
             UPDATE LOCAL USER
             */
 
-            localStorage.setItem(
-
-                "user",
-
-                JSON.stringify(
-                    updatedUser
-                )
-
-            );
+            localStorage.setItem("user", JSON.stringify(updatedUser));
 
             window.location.reload();
-
         } catch (error) {
-
             console.log(error);
-
         } finally {
-
             setLoading(false);
-
         }
-
     }
 
     return (
-
-        <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-        >
-
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="w-[400px] bg-[#202c33] rounded-xl overflow-hidden shadow-2xl">
-
                 {/* HEADER */}
 
                 <div className="h-20 bg-[#111b21] flex items-center justify-between px-6">
-
-                    <h1 className="text-white text-xl font-semibold">
-
-                        Profile
-
-                    </h1>
+                    <h1 className="text-white text-xl font-semibold">Profile</h1>
 
                     <button
                         onClick={onClose}
@@ -114,240 +52,118 @@ function ProfileModal({
                     >
                         ×
                     </button>
-
                 </div>
 
                 {/* BODY */}
 
                 <div className="p-6 flex flex-col items-center">
-
-                    <div className="flex items-center gap-5 mb-6" >
+                    <div className="flex items-center gap-5 mb-6">
                         <div>
                             {/* AVATAR */}
 
                             <div className="mb-4 ml-3">
-
-                                {user.avatar?.startsWith(
-                                    "http"
-                                ) ? (
-
+                                {user.avatar?.startsWith("http") ? (
                                     <img
                                         src={user.avatar}
                                         alt="avatar"
                                         className="w-24 h-24 rounded-full object-cover"
                                     />
-
                                 ) : (
-
                                     <div className="w-24 h-24 rounded-full bg-green-600 flex items-center justify-center text-white text-4xl font-bold">
-
                                         {user.avatar}
-
                                     </div>
-
                                 )}
-
                             </div>
 
                             {/* IMAGE PICKER */}
 
                             {isOwnProfile && (
-
-                                <label
-                                    className="mt-1 w-fit px-4 border border-gray-600 rounded-lg py-1 text-center text-xs text-gray-300 cursor-pointer hover:bg-[#2a3942] hover:border-gray-500 transition"
-                                >
-
+                                <label className="mt-1 w-fit px-4 border border-gray-600 rounded-lg py-1 text-center text-xs text-gray-300 cursor-pointer hover:bg-[#2a3942] hover:border-gray-500 transition">
                                     Change Photo
-
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        onChange={(e) =>
-
-                                            setAvatarFile(
-                                                e.target.files[0]
-                                            )
-
-                                        }
+                                        onChange={(e) => setAvatarFile(e.target.files[0])}
                                         className="hidden"
                                     />
-
                                 </label>
-
                             )}
                         </div>
                         {/* NAME */}
                         <div className="mb-5 ml-3">
                             <h2 className="text-white text-2xl font-semibold">
-
-                                {user.displayName ||
-                                    user.name}
-
+                                {user.displayName || user.name}
                             </h2>
 
                             {/* USERNAME */}
 
-                            <p className="text-gray-400 mb-4">
-
-                                @{user.username}
-
-                            </p>
+                            <p className="text-gray-400 mb-4">@{user.username}</p>
                         </div>
                     </div>
 
                     <div className="w-full space-y-3">
-
                         {/* BIO */}
 
                         <div className="bg-[#2a3942] p-3 rounded-lg">
-
                             <div className="flex items-center justify-between mb-1">
-
-                                <p className="text-gray-400 text-sm">
-
-                                    Bio
-
-                                </p>
+                                <p className="text-gray-400 text-sm">Bio</p>
 
                                 {isOwnProfile && (
-
                                     <button
-
-                                        onClick={() =>
-
-                                            setIsEditingBio(
-                                                !isEditingBio
-                                            )
-
-                                        }
-
+                                        onClick={() => setIsEditingBio(!isEditingBio)}
                                         className="text-gray-400 hover:text-white transition"
-
                                     >
-
                                         ✏️
-
                                     </button>
-
                                 )}
-
                             </div>
 
-                            {isOwnProfile &&
-                                isEditingBio ? (
-
+                            {isOwnProfile && isEditingBio ? (
                                 <textarea
-
                                     value={bio}
-
-                                    onChange={(e) =>
-
-                                        setBio(
-                                            e.target.value
-                                        )
-
-                                    }
-
+                                    onChange={(e) => setBio(e.target.value)}
                                     className="w-full bg-transparent text-white outline-none resize-none"
-
                                     autoFocus
-
                                 />
-
                             ) : (
-
-                                <p className="text-white">
-
-                                    {bio || "No bio"}
-
-                                </p>
-
+                                <p className="text-white">{bio || "No bio"}</p>
                             )}
-
                         </div>
 
                         {/* STATUS */}
 
                         <div className="bg-[#2a3942] p-3 rounded-lg">
+                            <p className="text-gray-400 text-sm">Status</p>
 
-                            <p className="text-gray-400 text-sm">
-
-                                Status
-
-                            </p>
-
-                            <p className="text-white">
-
-                                {isOnline
-
-                                    ? "🟢 Online"
-
-                                    : "⚫ Offline"}
-
-                            </p>
-
+                            <p className="text-white">{isOnline ? "🟢 Online" : "⚫ Offline"}</p>
                         </div>
 
                         {/* EMAIL */}
 
                         {isOwnProfile && (
-
                             <div className="bg-[#2a3942] p-3 rounded-lg">
+                                <p className="text-gray-400 text-sm">Email</p>
 
-                                <p className="text-gray-400 text-sm">
-
-                                    Email
-
-                                </p>
-
-                                <p className="text-white">
-
-                                    {user.email}
-
-                                </p>
-
+                                <p className="text-white">{user.email}</p>
                             </div>
-
                         )}
-
                     </div>
 
                     {/* SAVE BUTTON */}
 
                     {isOwnProfile && (
-
                         <button
-
                             onClick={handleSave}
-
                             disabled={loading}
-
                             className="mt-5 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg transition"
-
                         >
-
-                            {
-
-                                loading
-
-                                    ? "Saving..."
-
-                                    : "Save Profile"
-
-                            }
-
+                            {loading ? "Saving..." : "Save Profile"}
                         </button>
-
                     )}
-
                 </div>
-
             </div>
-
         </div>
-
     );
-
 }
 
 export default ProfileModal;
