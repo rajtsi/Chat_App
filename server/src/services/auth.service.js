@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const userRepo = require("../repositories/user.repository");
 const cloudinary = require("../config/cloudinary");
 const authRepo = require("../repositories/auth.repository");
+const urlUtils = require("../utilities/urlUtilities");
+
 
 async function signup(data) {
     const existingEmail = await userRepo.findByEmail(data.email);
@@ -79,6 +81,13 @@ async function updateProfile(userId, bio, file) {
     UPLOAD IMAGE
     */
     if (file) {
+
+        const userDetails = await userRepo.findById(userId);
+        const publicId = urlUtils.publicIdExtractor(userDetails.avatar); 
+        if (publicId) {
+            await cloudinary.uploader.destroy(publicId);
+        }
+
         const uploadedImage = await new Promise((resolve, reject) => {
             cloudinary.uploader
                 .upload_stream(
