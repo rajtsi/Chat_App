@@ -93,7 +93,24 @@ function VideoCall({ conversationId, initialOffer, onCloseLayout }) {
             peerConnectionRef.current.close();
         }
 
-        const peerConnection = new RTCPeerConnection();
+        // 💥 ADD THIS ICE SERVERS CONFIGURATION OBJECT HERE:
+        const iceServersConfig = {
+            iceServers: [
+                {
+                    // Public Google STUN server (Fast lookup for relaxed/cross networks)
+                    urls: "stun:stun.l.google.com:19302"
+                },
+                {
+                    // Free Public TURN Relay Server (Forces connection through strict symmetric NAT firewalls)
+                    urls: "turn:openrelay.metered.ca:443",
+                    username: "openrelayproject",
+                    credential: "openrelayproject"
+                }
+            ]
+        };
+
+        // 💥 PASS THE CONFIG DIRECTLY INTO THE CONSTRUCTOR HOOK BELOW:
+        const peerConnection = new RTCPeerConnection(iceServersConfig);
         peerConnectionRef.current = peerConnection;
 
         const activeStream = customStream || localStreamRef.current;
@@ -113,10 +130,25 @@ function VideoCall({ conversationId, initialOffer, onCloseLayout }) {
             }
         };
 
+        // 🚀 BONUS FIX: Let's also update your ontrack handler right here
+        // so it appends late-arriving tracks instead of resetting the srcObject!
         peerConnection.ontrack = async (event) => {
             console.log("Remote stream received via ontrack!");
             if (remoteVideoRef.current) {
-                remoteVideoRef.current.srcObject = event.streams[0];
+                // If a stream container is already assigned, cleanly add the track to it
+                if (remoteVideoRef.current.srcObject) {
+                    console.log("Appending secondary track to existing media stream.");
+                    remoteVideoRef.current.srcObject.addTrack(event.track);
+                    return;
+                }
+
+                // If it's the very first track, assign the baseline stream array cleanly
+                if (event.streams && event.streams[0]) {
+                    remoteVideoRef.current.srcObject = event.streams[0];
+                } else {
+                    remoteVideoRef.current.srcObject = new MediaStream([event.track]);
+                }
+
                 setCallActive(true);
 
                 try {
