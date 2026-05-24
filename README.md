@@ -192,17 +192,18 @@ Actual media flows directly between peers through WebRTC.
 # Project Structure
 
 ## Backend
-
 ```text
 server/
-├── controllers/
-├── services/
-├── repositories/
-├── routes/
-├── sockets/
-├── middleware/
-├── prisma/
-└── config/
+├── src/
+│   ├── controllers/
+|   ├── services/
+│   ├── repositories/
+│   ├── routes/
+│   ├── sockets/
+│   ├── middleware/
+│   └── utils/
+|   └── config/
+├── Prisma/
 ```
 
 ## Frontend
@@ -215,7 +216,7 @@ client/
 │   ├── context/
 │   ├── pages/
 │   ├── socket/
-│   └── utils/
+│   └── config/
 ```
 
 ---
@@ -297,26 +298,11 @@ npm run dev
 # Future Improvements
 
 * Group chat support
-* Message pagination
 * Typing indicators
 * Media/file sharing
 * Push notifications
 * Redis socket scaling
-* TURN server support
 * Mobile responsive optimization
-
----
-
-# Key Learnings
-
-* WebRTC signaling architecture
-* Socket.IO room management
-* Realtime state synchronization
-* Database indexing strategies
-* Conversation membership modeling
-* Seen/unread state management
-* React realtime UI updates
-* Peer-to-peer communication flow
 
 ---
 
